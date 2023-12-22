@@ -2,7 +2,7 @@ LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 USE IEEE.numeric_std.ALL;
 
-ENTITY hotel_system IS
+ENTITY HotelSystem IS
 	PORT (
 		CLK, start : IN STD_LOGIC;
 		reset : IN STD_LOGIC;
@@ -14,15 +14,26 @@ ENTITY hotel_system IS
 		input_uang : IN STD_LOGIC_VECTOR (13 downto 0);
 		total_harga : INOUT STD_LOGIC_VECTOR (13 downto 0);
 		kembalian : OUT STD_LOGIC_VECTOR (13 downto 0);
-		done : INOUT STD_LOGIC
-	);
-END ENTITY hotel_system;
+		done : OUT STD_LOGIC;
 
-ARCHITECTURE rtl OF hotel_system IS
+		-- ada 5 sevseg untuk display harga 1 kamar
+		ratus_ribuan : OUT STD_LOGIC_VECTOR (6 DOWNTO 0);
+		jutaan : OUT STD_LOGIC_VECTOR (6 DOWNTO 0)
+	);
+END ENTITY HotelSystem;
+
+ARCHITECTURE rtl OF HotelSystem IS
+	COMPONENT sevseg_modul IS
+	PORT (
+		sev_in : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
+		sev_out : OUT STD_LOGIC_VECTOR(6 DOWNTO 0)
+	);
+	END COMPONENT sevseg_modul;
+
 	-- deklarasi state
 	type stateType IS (idle, booking, loading, payment, check_in, booking_success);
 	-- deklarasi daftar reservasi kamar
-	type roomArr is array (0 to 4) of STD_LOGIC_VECTOR (4 downto 0);
+	type roomArr is array (0 to 31) of STD_LOGIC_VECTOR (4 downto 0);
 
 	signal state, nextState : stateType;
 	-- list kamar yang sudah di-book
@@ -30,16 +41,20 @@ ARCHITECTURE rtl OF hotel_system IS
 	-- index dari daftar kamar
 	signal arrIdx : integer := 0;
 
+	-- signal untuk seven segment
+	signal bcd1 : STD_LOGIC_VECTOR (3 DOWNTO 0);
+	signal bcd2 : STD_LOGIC_VECTOR (3 DOWNTO 0);
+
 	-- Fungsi untuk mengecek ketersediaan kamar
-	function isRoomAvailable(kamar: STD_LOGIC_VECTOR; daftarKamar : roomArr := (others => (others => '0')) ) return boolean is
+	function isRoomAvailable(kamar: STD_LOGIC_VECTOR; daftarKamar : roomArr) return boolean is
 		begin
-			for i in daftarKamar'range loop
-				if daftarKamar(i) = kamar then
-					return false;
-				end if;
-			end loop;
-			return true;
-		end function;
+		for i in daftarKamar'range loop
+			if daftarKamar(i) = kamar then
+				return false;
+			end if;
+		end loop;
+		return true;
+	end function;
 
 	-- Fungsi untuk menghitung total harga berdasarkan jenis kamar, jumlah orang, dan malam menginap
 	function calculateTotalPrice(kamar: STD_LOGIC_VECTOR; orang: STD_LOGIC_VECTOR; malam: STD_LOGIC_VECTOR) return STD_LOGIC_VECTOR is
@@ -47,16 +62,21 @@ ARCHITECTURE rtl OF hotel_system IS
 		variable jml_kamar : STD_LOGIC_VECTOR (4 downto 0) := "00000";
 		variable total_harga_temp : STD_LOGIC_VECTOR (13 downto 0) := "00000000000000";
 		begin
+			-- untuk nomor kamar 1 sampe 10 harga 1 kamar 500k (2 orang per kamar)
+			-- untuk nomor kamar 11 sampe 20 harga 1 kamar 800k (3 orang per kamar)
+			-- untuk nomor kamar 21 sampe 31 harga 1 kamar 1.5 jt (4 orang per kamar)
 			if kamar < "01011" then
 				harga_kamar := "0101";
+				jml_kamar := STD_LOGIC_VECTOR(unsigned(orang) / 2);
 			elsif kamar > "01010" and kamar < "10101" then
 				harga_kamar := "1000";
+				jml_kamar := STD_LOGIC_VECTOR(unsigned(orang) / 3);
 			elsif kamar > "10100" then
 				harga_kamar := "1111";
+				jml_kamar := STD_LOGIC_VECTOR(unsigned(orang) / 4);
 			end if;
 
-			jml_kamar := STD_LOGIC_VECTOR(unsigned(orang) / 2);
-
+			
 			if jml_kamar = "00000" then
 				jml_kamar := "00001";
 			end if;
@@ -67,7 +87,11 @@ ARCHITECTURE rtl OF hotel_system IS
 		end function;
 
 BEGIN
-	PROCESS (state, start, no_kamar, jml_malam, jml_orang)
+
+	SevenSeg_RatusRibuan : sevseg_modul port map(bcd1, ratus_ribuan);
+	SevenSeg_Jutaan : sevseg_modul port map(bcd2, jutaan);
+
+	PROCESS (state, start, no_kamar, jml_malam, jml_orang, input_uang)
 		variable isBooked : boolean;
 	BEGIN
 		CASE state IS
@@ -84,8 +108,7 @@ BEGIN
 					nextState <= loading;
 				END IF;
 			WHEN loading =>
-				-- looping kamar yang tersedia (dapat diimplementasikan ke function)
-				if not isRoomAvailable(no_kamar) then
+				if not isRoomAvailable(no_kamar, daftarKamar) then
 					isBooked := TRUE;
 					report "Booking gagal, kamar tidak tersedia.";
 				else
@@ -100,8 +123,21 @@ BEGIN
 			WHEN payment =>
 				arrIdx <= arrIdx + 1;
 
+				-- mendisplay harga kamar (dapat diimplementasikan ke dalam function)
+				if no_kamar < "01011" then
+					bcd1 <= "0101";
+					bcd2 <= "0000";
+				elsif no_kamar > "01010" and no_kamar < "10101" then
+					bcd1 <= "1000";
+					bcd2 <= "0000";
+				elsif no_kamar > "10100" then
+					bcd1 <= "0000";
+					bcd2 <= "1111";
+				end if;
+
 				-- Menggunakan fungsi calculateTotalPrice untuk menghitung total harga
 				total_harga <= calculateTotalPrice(no_kamar, jml_orang, jml_malam);
+
 				nextState <= check_in;
 			WHEN check_in =>
 				report "Masukkan uang untuk pembayaran.";
