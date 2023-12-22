@@ -12,7 +12,7 @@ ENTITY hotel_system IS
 		no_kamar : IN STD_LOGIC_VECTOR (4 downto 0);
 		-- input_uang dlm satuan ratusan ribu. contoh: 0101 = 500k.
 		input_uang : IN STD_LOGIC_VECTOR (13 downto 0);
-		total_harga : OUT STD_LOGIC_VECTOR (13 downto 0);
+		total_harga : INOUT STD_LOGIC_VECTOR (13 downto 0);
 		kembalian : OUT STD_LOGIC_VECTOR (13 downto 0);
 		done : INOUT STD_LOGIC
 	);
@@ -23,21 +23,53 @@ ARCHITECTURE rtl OF hotel_system IS
 	type stateType IS (idle, booking, loading, payment, check_in, booking_success);
 	-- deklarasi daftar reservasi kamar
 	type roomArr is array (0 to 4) of STD_LOGIC_VECTOR (4 downto 0);
-	
+
 	signal state, nextState : stateType;
 	-- list kamar yang sudah di-book
 	signal daftarKamar : roomArr := (others => (others => '0'));
 	-- index dari daftar kamar
 	signal arrIdx : integer := 0;
+
+	-- Fungsi untuk mengecek ketersediaan kamar
+	function isRoomAvailable(kamar: STD_LOGIC_VECTOR; daftarKamar : roomArr := (others => (others => '0')) ) return boolean is
+		begin
+			for i in daftarKamar'range loop
+				if daftarKamar(i) = kamar then
+					return false;
+				end if;
+			end loop;
+			return true;
+		end function;
+
+	-- Fungsi untuk menghitung total harga berdasarkan jenis kamar, jumlah orang, dan malam menginap
+	function calculateTotalPrice(kamar: STD_LOGIC_VECTOR; orang: STD_LOGIC_VECTOR; malam: STD_LOGIC_VECTOR) return STD_LOGIC_VECTOR is
+		variable harga_kamar : STD_LOGIC_VECTOR (3 downto 0) := "0000";
+		variable jml_kamar : STD_LOGIC_VECTOR (4 downto 0) := "00000";
+		variable total_harga_temp : STD_LOGIC_VECTOR (13 downto 0) := "00000000000000";
+		begin
+			if kamar < "01011" then
+				harga_kamar := "0101";
+			elsif kamar > "01010" and kamar < "10101" then
+				harga_kamar := "1000";
+			elsif kamar > "10100" then
+				harga_kamar := "1111";
+			end if;
+
+			jml_kamar := STD_LOGIC_VECTOR(unsigned(orang) / 2);
+
+			if jml_kamar = "00000" then
+				jml_kamar := "00001";
+			end if;
+
+			total_harga_temp := STD_LOGIC_VECTOR(unsigned(jml_kamar) * unsigned(malam) * unsigned(harga_kamar));
+
+			return total_harga_temp;
+		end function;
+
 BEGIN
 	PROCESS (state, start, no_kamar, jml_malam, jml_orang)
-		variable jml_kamar : STD_LOGIC_VECTOR (4 downto 0) := "00000";
-		variable harga_kamar : STD_LOGIC_VECTOR (3 downto 0) := "0000";
-		variable total_harga_temp : STD_LOGIC_VECTOR (13 downto 0) := "00000000000000";
-		variable temp : integer;
 		variable isBooked : boolean;
 	BEGIN
-
 		CASE state IS
 			WHEN idle =>
 				IF start = '1' THEN
@@ -53,15 +85,13 @@ BEGIN
 				END IF;
 			WHEN loading =>
 				-- looping kamar yang tersedia (dapat diimplementasikan ke function)
-				for i in daftarKamar'range loop
-					if daftarKamar(i) = no_kamar then
-						isBooked := TRUE;
-						report "Booking gagal, kamar tidak tersedia.";
-					end if;
-				end loop;
-				
-				daftarKamar(arrIdx) <= no_kamar;
-				
+				if not isRoomAvailable(no_kamar) then
+					isBooked := TRUE;
+					report "Booking gagal, kamar tidak tersedia.";
+				else
+					daftarKamar(arrIdx) <= no_kamar;
+				end if;
+
 				if isBooked then
 					nextState <= booking;
 				else
@@ -70,52 +100,15 @@ BEGIN
 			WHEN payment =>
 				arrIdx <= arrIdx + 1;
 
-				-- Operasi kalkulasi harga (dapat diimplementasikan ke function)
-				-- untuk nomor kamar 1 sampe 10 harga 1 kamar 500k (2 orang per kamar)
-				-- untuk nomor kamar 11 sampe 20 harga 1 kamar 800k (3 orang per kamar)
-				-- untuk nomor kamar 21 sampe 31 harga 1 kamar 1.5 jt (5 orang per kamar)
-
-				
-				if no_kamar < "01011" then
-					harga_kamar := "0101";
-
-					jml_kamar := STD_LOGIC_VECTOR(unsigned(jml_orang) / 2);
-
-					if jml_kamar = "00000" then
-						jml_kamar := "00001";
-					end if;
-
-					total_harga_temp := STD_LOGIC_VECTOR(unsigned(jml_kamar) * unsigned(jml_malam) * unsigned(harga_kamar));
-				elsif no_kamar > "01010" and no_kamar < "10101" then
-					harga_kamar := "1000";
-					
-					jml_kamar := STD_LOGIC_VECTOR(unsigned(jml_orang) / 3);
-
-					if jml_kamar = "00000" then
-						jml_kamar := "00001";
-					end if;
-
-					total_harga_temp := STD_LOGIC_VECTOR(unsigned(jml_kamar) * unsigned(jml_malam) * unsigned(harga_kamar));
-				elsif no_kamar > "10100" then
-					harga_kamar := "1111";
-					
-					jml_kamar := STD_LOGIC_VECTOR(unsigned(jml_orang) / 5);
-
-					if jml_kamar = "00000" then
-						jml_kamar := "00001";
-					end if;
-
-					total_harga_temp := STD_LOGIC_VECTOR(unsigned(jml_kamar) * unsigned(jml_malam) * unsigned(harga_kamar));
-				end if;
-
-				total_harga <= total_harga_temp;
+				-- Menggunakan fungsi calculateTotalPrice untuk menghitung total harga
+				total_harga <= calculateTotalPrice(no_kamar, jml_orang, jml_malam);
 				nextState <= check_in;
 			WHEN check_in =>
 				report "Masukkan uang untuk pembayaran.";
 
-				if input_uang >= total_harga_temp then
+				if input_uang >= total_harga then
 					report "Berhasil Check In!";
-					kembalian <= STD_LOGIC_VECTOR(unsigned(input_uang) - unsigned(total_harga_temp));
+					kembalian <= STD_LOGIC_VECTOR(unsigned(input_uang) - unsigned(total_harga));
 					nextState <= booking_success;
 				else
 					report "Uang tidak cukup.";
