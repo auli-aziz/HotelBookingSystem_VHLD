@@ -2,14 +2,14 @@ LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 USE IEEE.numeric_std.ALL;
 
-ENTITY sevseg_modul IS
+ENTITY SevSegModul IS
     PORT (
         sev_in : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
         sev_out : OUT STD_LOGIC_VECTOR(6 DOWNTO 0)
     );
-END ENTITY sevseg_modul;
+END ENTITY SevSegModul;
 
-ARCHITECTURE rtl OF sevseg_modul IS
+ARCHITECTURE rtl OF SevSegModul IS
 BEGIN
     PROCESS (sev_in)
     BEGIN

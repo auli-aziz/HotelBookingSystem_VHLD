@@ -2,22 +2,22 @@ library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
-entity sevseg_modul_tb is
-end entity sevseg_modul_tb;
+entity SevSegModul_tb is
+end entity SevSegModul_tb;
 
-architecture rtl of sevseg_modul_tb is
-    COMPONENT sevseg_modul IS
+architecture rtl of SevSegModul_tb is
+    COMPONENT SevSegModul IS
     PORT (
         sev_in : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
         sev_out : OUT STD_LOGIC_VECTOR(6 DOWNTO 0)
     );
-    END COMPONENT sevseg_modul;
+    END COMPONENT SevSegModul;
 
     signal input : STD_LOGIC_VECTOR(3 DOWNTO 0);
     signal output : STD_LOGIC_VECTOR(6 DOWNTO 0);
 begin
     
-    UUT : sevseg_modul port map(sev_in => input, sev_out => output);
+    UUT : SevSegModul port map(sev_in => input, sev_out => output);
 
     process
         constant waktu : time := 100 ps;

@@ -27,12 +27,12 @@ ENTITY HotelSystem IS
 END ENTITY HotelSystem;
 
 ARCHITECTURE rtl OF HotelSystem IS
-	COMPONENT sevseg_modul IS
+	COMPONENT SevSegModul IS
 	PORT (
 		sev_in : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
 		sev_out : OUT STD_LOGIC_VECTOR(6 DOWNTO 0)
 	);
-	END COMPONENT sevseg_modul;
+	END COMPONENT SevSegModul;
 
 	-- deklarasi state
 	type stateType IS (idle, booking, loading, payment, check_in, booking_success);
@@ -92,8 +92,8 @@ ARCHITECTURE rtl OF HotelSystem IS
 
 BEGIN
 
-	SevenSeg_RatusRibuan : sevseg_modul port map(bcd1, ratus_ribuan);
-	SevenSeg_Jutaan : sevseg_modul port map(bcd2, jutaan);
+	SevenSeg_RatusRibuan : SevSegModul port map(bcd1, ratus_ribuan);
+	SevenSeg_Jutaan : SevSegModul port map(bcd2, jutaan);
 
 	PROCESS (state, start, no_kamar, jml_malam, jml_orang, input_uang)
 		variable isBooked : boolean;
@@ -107,6 +107,8 @@ BEGIN
 
 				IF start = '1' THEN
 				    nextState <= booking;
+				ELSE 
+					nextState <= idle;
 				end if;
 			WHEN booking =>
 				step <= "001";
@@ -116,6 +118,8 @@ BEGIN
 				report "Masukan nomor kamar, waktu menginap, dan jumlah orang menginap.";
 				IF no_kamar > "00000" and jml_malam > "00000" and jml_orang > "00000" THEN 
 					nextState <= loading;
+				ELSE 
+					nextState <= booking;
 				END IF;
 			WHEN loading =>
 				step <= "010";
@@ -173,6 +177,7 @@ BEGIN
 					kembalian <= STD_LOGIC_VECTOR(unsigned(input_uang) - unsigned(total_harga));
 					nextState <= booking_success;
 				else
+					nextState <= check_in;
 					report "Uang tidak cukup.";
 				end if;
 			WHEN booking_success =>
