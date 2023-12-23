@@ -32,11 +32,11 @@
 
 ## Fitur-fitur
 
-### 7-Segment
+## 7-Segment
 `Seven segment merupakan tampilan output yang digunakan untuk menampilkan harga kamar dalam bentuk angka atau digit kepada pengguna. Tampilan ini memudahkan pengguna dalam melihat dan memahami jumlah harga yang harus dibayarkan untuk reservasi kamar di hotel.`
 
 
-### Finite State Machine
+## Finite State Machine
 `Berguna untuk menggambarkan kontroler booking yang memiliki keadaan seperti AVAILABLE, RESERVED, dan OCCUPIED`
 
 
