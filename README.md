@@ -26,32 +26,6 @@
 - [Github](https://desktop.github.com)
 - [Draw.io](https://app.diagrams.net)
 
-
-## Cara Kerja
-1. Pada state idle, sistem akan menunggu pengguna untuk menekan tombol start
-
-2. Jika tombol start ditekan, sistem akan berpindah ke state booking
-
-3. Pada state booking, sistem akan meminta pengguna untuk memasukkan nomor kamar, waktu menginap, dan jumlah orang menginap
-
-4. Jika nomor kamar, waktu menginap, dan jumlah orang menginap valid, sistem akan berpindah ke state loading
-
-5. Pada state loading, sistem akan mengecek apakah nomor kamar yang dimasukkan sudah terisi atau belum. Jika belum terisi, sistem akan menambahkan nomor kamar tersebut ke daftar kamar yang sudah dipesan
-
-6. Jika nomor kamar yang dimasukkan sudah terisi, sistem akan berpindah kembali ke state booking
-
-7. Pada state payment, sistem akan meminta pengguna untuk memasukkan uang pembayaran
-
-8. Jika uang pembayaran mencukupi, sistem akan berpindah ke state check_in
-
-9. Pada state check_in, sistem akan mencetak laporan bahwa booking berhasil dan memberikan uang kembalian kepada pengguna
-
-10. Sistem akan berpindah ke state booking_success
-
-11. Pada state booking_success, sistem akan menyalakan output done untuk menunjukkan bahwa booking berhasil
-
-12. Sistem akan berpindah kembali ke state idle dan menunggu pengguna untuk menekan tombol start
-
 ## Fitur-fitur
 Berikut merupakan fitur-fitur yang ada pada proyek ini :
 
