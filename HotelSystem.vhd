@@ -20,7 +20,9 @@ ENTITY HotelSystem IS
 
 		-- ada 2 sevseg untuk display harga 1 kamar
 		ratus_ribuan : OUT STD_LOGIC_VECTOR (6 DOWNTO 0);
-		jutaan : OUT STD_LOGIC_VECTOR (6 DOWNTO 0)
+		jutaan : OUT STD_LOGIC_VECTOR (6 DOWNTO 0);
+
+		test_out : OUT integer
 	);
 END ENTITY HotelSystem;
 
@@ -100,6 +102,9 @@ BEGIN
 			WHEN idle =>
 				step <= "000";
 				done <= '0';
+				bcd1 <= "0000";
+				bcd2 <= "0000";
+
 				IF start = '1' THEN
 				    nextState <= booking;
 				end if;
@@ -114,6 +119,19 @@ BEGIN
 				END IF;
 			WHEN loading =>
 				step <= "010";
+
+				if arrIdx > 31 then
+					arrIdx <= 0;
+
+					-- clear daftar kamar
+					for i in 0 to 31 loop
+						daftarKamar(i) <= "00000";
+					end loop;
+						
+				end if;
+
+				test_out <= arrIdx;
+
 				if not isRoomAvailable(no_kamar, daftarKamar) then
 					isBooked := TRUE;
 					report "Booking gagal, kamar tidak tersedia.";

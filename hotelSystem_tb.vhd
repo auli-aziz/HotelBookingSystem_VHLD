@@ -13,6 +13,7 @@ architecture rtl of HotelSystem_tb is
     signal done : std_logic := '0';
     signal step : std_logic_vector (2 downto 0) := "000";
     signal ratus_ribuan, jutaan : std_logic_vector(6 downto 0);
+    signal test_out : integer;
     
     COMPONENT HotelSystem
         PORT (
@@ -23,7 +24,8 @@ architecture rtl of HotelSystem_tb is
             kembalian : OUT STD_LOGIC_VECTOR (13 downto 0);
             done : OUT STD_LOGIC;
             step : OUT STD_LOGIC_VECTOR (2 downto 0);
-            ratus_ribuan, jutaan : OUT STD_LOGIC_VECTOR (6 DOWNTO 0)
+            ratus_ribuan, jutaan : OUT STD_LOGIC_VECTOR (6 DOWNTO 0);
+            test_out : OUT integer
         );
     END COMPONENT HotelSystem;
 
@@ -44,7 +46,8 @@ begin
         done => done,
         step => step,
         ratus_ribuan => ratus_ribuan,
-        jutaan => jutaan
+        jutaan => jutaan,
+        test_out => test_out
     );
 
     process
@@ -66,15 +69,21 @@ begin
         for i in 0 to 31 loop
             for j in 0 to 31 loop
                 for k in 0 to 31 loop
-                    jml_orang <= STD_LOGIC_VECTOR(to_unsigned(i, 5));
-                    jml_malam <= STD_LOGIC_VECTOR(to_unsigned(j, 5));
                     no_kamar <= STD_LOGIC_VECTOR(to_unsigned(k, 5));
+                    jml_malam <= STD_LOGIC_VECTOR(to_unsigned(j, 5));
+                    jml_orang <= STD_LOGIC_VECTOR(to_unsigned(i, 5));
 
-                    wait for waktu * 10;
+                    wait for waktu * 8;
+
+                    -- if i > 0 then
+                    --     for l in 0 to 16383 loop
+                    --         input_uang <= STD_LOGIC_VECTOR(to_unsigned(l, 14));
+                    --     end loop;
+                    -- end if;
                     
                     counter := counter + 1;
                     if counter = 32*32*32 then
-                        stimulus_done <= TRUE; -- Set stimulus_done to TRUE after all the loops complete
+                        stimulus_done <= TRUE;
                     end if;
                 end loop;
             end loop;
