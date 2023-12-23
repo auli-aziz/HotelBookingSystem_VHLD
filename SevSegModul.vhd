@@ -4,7 +4,7 @@ USE IEEE.numeric_std.ALL;
 
 ENTITY sevseg_modul IS
     PORT (
-        sev_in : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
+        sev_in : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
         sev_out : OUT STD_LOGIC_VECTOR(6 DOWNTO 0)
     );
 END ENTITY sevseg_modul;
