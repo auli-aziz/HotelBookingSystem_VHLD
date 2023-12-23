@@ -15,8 +15,10 @@ ENTITY HotelSystem IS
 		total_harga : INOUT STD_LOGIC_VECTOR (13 downto 0);
 		kembalian : OUT STD_LOGIC_VECTOR (13 downto 0);
 		done : OUT STD_LOGIC;
+		-- menunjukkan current state
+		step : OUT STD_LOGIC_VECTOR (2 downto 0);
 
-		-- ada 5 sevseg untuk display harga 1 kamar
+		-- ada 2 sevseg untuk display harga 1 kamar
 		ratus_ribuan : OUT STD_LOGIC_VECTOR (6 DOWNTO 0);
 		jutaan : OUT STD_LOGIC_VECTOR (6 DOWNTO 0)
 	);
@@ -96,10 +98,13 @@ BEGIN
 	BEGIN
 		CASE state IS
 			WHEN idle =>
+				step <= "000";
+				done <= '0';
 				IF start = '1' THEN
 				    nextState <= booking;
 				end if;
 			WHEN booking =>
+				step <= "001";
 				isBooked := FALSE;
 
 				report "Selamat Datang di Hotel Booking System!";
@@ -108,6 +113,7 @@ BEGIN
 					nextState <= loading;
 				END IF;
 			WHEN loading =>
+				step <= "010";
 				if not isRoomAvailable(no_kamar, daftarKamar) then
 					isBooked := TRUE;
 					report "Booking gagal, kamar tidak tersedia.";
@@ -121,6 +127,7 @@ BEGIN
 					nextState <= payment;
 				end if;
 			WHEN payment =>
+				step <= "011";
 				arrIdx <= arrIdx + 1;
 
 				-- mendisplay harga kamar (dapat diimplementasikan ke dalam function)
@@ -140,6 +147,7 @@ BEGIN
 
 				nextState <= check_in;
 			WHEN check_in =>
+				step <= "100";
 				report "Masukkan uang untuk pembayaran.";
 
 				if input_uang >= total_harga then
@@ -149,7 +157,8 @@ BEGIN
 				else
 					report "Uang tidak cukup.";
 				end if;
-			WHEN booking_success => 
+			WHEN booking_success =>
+				step <= "101";
 				done <= '1';
 				nextState <= idle;
 			WHEN others =>

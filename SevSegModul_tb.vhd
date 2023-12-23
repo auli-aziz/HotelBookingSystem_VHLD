@@ -21,11 +21,9 @@ begin
 
     process
         constant waktu : time := 100 ps;
-        variable counter: integer := 0;
     begin
         for i in 0 to 9 loop
-            input <= STD_LOGIC_VECTOR(to_unsigned(counter, 4));
-            counter := counter + 1;
+            input <= STD_LOGIC_VECTOR(to_unsigned(i, 4));
             wait for waktu;
         end loop;
         wait;
