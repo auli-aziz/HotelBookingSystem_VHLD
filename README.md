@@ -11,10 +11,11 @@
 `Hotel Booking System adalah suatu sistem yang memungkinkan user untuk melakukan reservasi kamar hotel. Sistem ini akan menghitung berapa uang yang harus dibayarkan oleh client berdasarkan jenis kamar yang dipilih, berapa orang yang menginap, dan waktu menginapnya. Selain itu, pengguna bisa mendapatkan uang kembalian bila jumlah uang yang dikasih melebihi harga kamar.`
 
 ## Tujuan
- - Mengimplementasikan bahasa VHDL ke barang yang biasa kita temukan sehari-hari.
- - Dapat membuat desain Finite State Machine menggunakan bahasa VHDL.
- - Membuat metode yang dapat emmudahkan suatu pekerjaan di suatu bidang.
- - Mengasah ilmu VHDL untuk bekal masa depan nanti.
+- Menerapkan bahasa VHDL untuk meningkatkan fungsionalitas dan efisiensi dalam kehidupan sehari-hari.
+- Memperdalam pemahaman mengenai VHDL dan bagaimana penerapannya dalam pemrograman.
+- Mengembangkan desain FSM yang inovatif dengan memanfaatkan kemampuan bahasa VHDL untuk kontrol sistem yang efisien.
+- Mengidentifikasi dan mengimplementasikan strategi untuk meningkatkan keberlanjutan sistem melalui pemahaman dalam VHDL.
+
 
 
 ## Tools yang dipakai
