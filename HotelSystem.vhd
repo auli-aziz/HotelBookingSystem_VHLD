@@ -4,7 +4,7 @@ USE IEEE.numeric_std.ALL;
 
 ENTITY HotelSystem IS
 	PORT (
-		CLK, start : IN STD_LOGIC;
+		CLK, start, besok : IN STD_LOGIC;
 		reset : IN STD_LOGIC;
 		-- jml_orang & jml_malam maksimum adalah 31
 		jml_orang, jml_malam : IN STD_LOGIC_VECTOR (4 downto 0);
@@ -36,13 +36,14 @@ ARCHITECTURE rtl OF HotelSystem IS
 	END COMPONENT SevSegModul;
 
 	-- deklarasi state
-	type stateType IS (idle, booking, loading, payment, check_in, booking_success);
+	type stateType IS (idle, booking, loading, payment, check_in, booking_success, next_day);
 	-- deklarasi daftar reservasi kamar
-	type roomArr is array (0 to 31) of STD_LOGIC_VECTOR (4 downto 0);
+	type arr is array (0 to 31) of STD_LOGIC_VECTOR (4 downto 0);
 
 	signal state, nextState : stateType;
 	-- list kamar yang sudah di-book
-	signal daftarKamar : roomArr := (others => (others => '0'));
+	signal daftarKamar : arr := (others => (others => '0'));
+	signal sisaHari : arr := (others => (others => '0'));
 	-- index dari daftar kamar
 	signal arrIdx : integer := 0;
 
@@ -50,8 +51,22 @@ ARCHITECTURE rtl OF HotelSystem IS
 	signal bcd1 : STD_LOGIC_VECTOR (3 DOWNTO 0);
 	signal bcd2 : STD_LOGIC_VECTOR (3 DOWNTO 0);
 
+	-- Fungsi untuk mengurangi jumlah malam untuk kamar tertentu sesuai dengan index kamar tersebut
+	function decreaseNight(i : integer; sisaHari : arr) return STD_LOGIC_VECTOR IS
+		variable temp : STD_LOGIC_VECTOR (4 downto 0) := "00000";
+	BEGIN
+			if sisaHari(i) > "00000" then
+				temp := sisaHari(i);
+				temp := STD_LOGIC_VECTOR(unsigned(temp) - 1);
+		
+				return temp;
+			else 
+				return "00000";
+			end if;
+	END function;
+
 	-- Fungsi untuk mengecek ketersediaan kamar
-	function isRoomAvailable(kamar: STD_LOGIC_VECTOR; daftarKamar : roomArr) return boolean is
+	function isRoomAvailable(kamar: STD_LOGIC_VECTOR; daftarKamar : arr) return boolean is
 		begin
 		for i in daftarKamar'range loop
 			if daftarKamar(i) = kamar then
@@ -96,7 +111,7 @@ BEGIN
 	SevenSeg_RatusRibuan : SevSegModul port map(bcd1, ratus_ribuan);
 	SevenSeg_Jutaan : SevSegModul port map(bcd2, jutaan);
 
-	PROCESS (state, start, no_kamar, jml_malam, jml_orang, input_uang)
+	PROCESS (state, start, besok, no_kamar, jml_malam, jml_orang, input_uang)
 		variable isBooked : boolean;
 	BEGIN
 		CASE state IS
@@ -108,11 +123,23 @@ BEGIN
 				total_harga <= "00000000000000";
 				kembalian <= "00000000000000";
 
-				IF start = '1' THEN
+				IF besok = '1' THEN
+					nextState <= next_day;
+				ELSIF start = '1' THEN
 				    nextState <= booking;
 				ELSE 
 					nextState <= idle;
 				end if;
+			WHEN next_day =>
+				for i in sisaHari'range loop
+					if decreaseNight(i, sisaHari) = "00000" then
+						daftarKamar(i) <= "00000";
+						sisaHari(i) <= decreaseNight(i, sisaHari);
+					else
+						sisaHari(i) <= decreaseNight(i, sisaHari);
+					end if;
+				end loop;
+				nextState <= idle;
 			WHEN booking =>
 				step <= "001";
 				isBooked := FALSE;
@@ -144,6 +171,7 @@ BEGIN
 					report "Booking gagal, kamar tidak tersedia.";
 				else
 					daftarKamar(arrIdx) <= no_kamar;
+					sisaHari(arrIdx) <= jml_malam;
 				end if;
 
 				if isBooked then

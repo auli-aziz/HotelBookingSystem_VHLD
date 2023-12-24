@@ -6,7 +6,7 @@ entity HotelSystem_tb is
 end entity HotelSystem_tb;
 
 architecture rtl of HotelSystem_tb is
-    signal CLK, reset : std_logic := '0';
+    signal CLK, reset, besok : std_logic := '0';
     signal start : std_logic;
     signal jml_orang, jml_malam, no_kamar: std_logic_vector(4 downto 0) := (others => '0');
     signal input_uang, total_harga, kembalian : std_logic_vector(13 downto 0) := (others => '0');
@@ -17,7 +17,7 @@ architecture rtl of HotelSystem_tb is
     
     COMPONENT HotelSystem
         PORT (
-            CLK, start, reset : IN STD_LOGIC;
+            CLK, start, besok, reset : IN STD_LOGIC;
             jml_orang, jml_malam : IN STD_LOGIC_VECTOR (4 downto 0);
             no_kamar : IN STD_LOGIC_VECTOR (4 downto 0);
             input_uang, total_harga : INOUT STD_LOGIC_VECTOR (13 downto 0);
@@ -36,6 +36,7 @@ begin
     UUT : HotelSystem port map (
         CLK => CLK,
         start => start,
+        besok => besok,
         reset => reset,
         jml_orang => jml_orang,
         jml_malam => jml_malam,
@@ -87,8 +88,19 @@ begin
         wait for waktu;
         reset <= '0';
 
+        --------------------------------------------
+        -- Test case 2: kasus untuk decreaseNight --
+        --------------------------------------------
+        besok <= '1';
+        wait for waktu * 8;
+
+        reset <= '1';
+        besok <= '0';
+        wait for waktu;
+        reset <= '0';
+
         --------------------------------------------------
-        -- Test case 2 : kasus di mana uang tidak cukup --
+        -- Test case 3 : kasus di mana uang tidak cukup --
         --------------------------------------------------
         input_uang <= "00000000000000";
         for i in 0 to 31 loop
