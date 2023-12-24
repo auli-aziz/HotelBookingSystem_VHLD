@@ -98,6 +98,7 @@ begin
         besok <= '0';
         wait for waktu;
         reset <= '0';
+        start <= '1';
 
         --------------------------------------------------
         -- Test case 3 : kasus di mana uang tidak cukup --
@@ -119,7 +120,7 @@ begin
                 end loop;
             end loop;
         end loop;
-        reset <= '0';
+        reset <= '1';
         start <= '0';
         wait;
 
