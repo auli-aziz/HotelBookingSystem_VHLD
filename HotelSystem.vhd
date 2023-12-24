@@ -22,6 +22,7 @@ ENTITY HotelSystem IS
 		ratus_ribuan : OUT STD_LOGIC_VECTOR (6 DOWNTO 0);
 		jutaan : OUT STD_LOGIC_VECTOR (6 DOWNTO 0);
 
+		-- menunjukkan reservasi keberapa
 		test_out : OUT integer
 	);
 END ENTITY HotelSystem;
@@ -104,6 +105,8 @@ BEGIN
 				done <= '0';
 				bcd1 <= "0000";
 				bcd2 <= "0000";
+				total_harga <= "00000000000000";
+				kembalian <= "00000000000000";
 
 				IF start = '1' THEN
 				    nextState <= booking;

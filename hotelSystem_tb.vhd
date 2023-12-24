@@ -29,7 +29,7 @@ architecture rtl of HotelSystem_tb is
         );
     END COMPONENT HotelSystem;
 
-    constant waktu : time := 100 ps;
+    constant waktu : time := 10 ps;
     signal stimulus_done : boolean := false;
 begin
     
@@ -65,6 +65,10 @@ begin
         variable counter : integer := 0;
     begin
         start <= '1';
+
+        --------------------------------------------
+        -- Test case 1 : kasus di mana uang cukup --
+        --------------------------------------------
         input_uang <= "11111111111111";
         for i in 0 to 31 loop
             for j in 0 to 31 loop
@@ -74,20 +78,37 @@ begin
                     jml_orang <= STD_LOGIC_VECTOR(to_unsigned(i, 5));
 
                     wait for waktu * 8;
-
-                    -- if i > 0 then
-                    --     for l in 0 to 16383 loop
-                    --         input_uang <= STD_LOGIC_VECTOR(to_unsigned(l, 14));
-                    --     end loop;
-                    -- end if;
                     
                     counter := counter + 1;
-                    if counter = 32*32*32 then
+                end loop;
+            end loop;
+        end loop;
+        reset <= '1';
+        wait for waktu;
+        reset <= '0';
+
+        --------------------------------------------------
+        -- Test case 2 : kasus di mana uang tidak cukup --
+        --------------------------------------------------
+        input_uang <= "00000000000000";
+        for i in 0 to 31 loop
+            for j in 0 to 31 loop
+                for k in 0 to 31 loop
+                    no_kamar <= STD_LOGIC_VECTOR(to_unsigned(k, 5));
+                    jml_malam <= STD_LOGIC_VECTOR(to_unsigned(j, 5));
+                    jml_orang <= STD_LOGIC_VECTOR(to_unsigned(i, 5));
+
+                    wait for waktu * 8;
+                    
+                    counter := counter + 1;
+                    if counter = 32*32*32*2 then
                         stimulus_done <= TRUE;
                     end if;
                 end loop;
             end loop;
         end loop;
+        reset <= '0';
+        start <= '0';
         wait;
 
     end process;
