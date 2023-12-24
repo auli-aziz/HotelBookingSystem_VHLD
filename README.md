@@ -24,7 +24,6 @@
 - [ModelSim](https://www.intel.com/content/www/us/en/software-kit/750368/modelsim-intel-fpgas-standard-edition-software-version-18-1.html)
 - [Quartus Prime](https://www.intel.com/content/www/us/en/software-kit/660907/intel-quartus-prime-lite-edition-design-software-version-20-1-1-for-windows.html)
 - [Github](https://desktop.github.com)
-- [Draw.io](https://app.diagrams.net)
 
 ## Fitur-fitur
 Berikut merupakan fitur-fitur yang ada pada proyek ini :
