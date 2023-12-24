@@ -131,6 +131,7 @@ BEGIN
 					nextState <= idle;
 				end if;
 			WHEN next_day =>
+				step <= "110"
 				for i in sisaHari'range loop
 					if decreaseNight(i, sisaHari) = "00000" then
 						daftarKamar(i) <= "00000";
